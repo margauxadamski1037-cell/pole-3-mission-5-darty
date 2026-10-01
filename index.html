@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Comptoir Click & Collect Darty</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;600;700&display=swap">
+<style>
+/* Layout : bandeau d'enseigne, élève + sauvegarde, puis deux missions en sections empilées (scène à gauche, réponses à droite) */
+:root {
+  --bg: #f4f2f1;
+  --surface: #ffffff;
+  --ink: #1b1a1a;
+  --muted: #615b59;
+  --line: #d9d3d1;
+  --red: #e30613;
+  --red-soft: #fde6e7;
+  --black: #111111;
+  --wall: #ebe7e5;
+  --shelf: #8b8582;
+  --field: #faf8f7;
+  --kraft: #c8955a;
+  --kraft-d: #a8763f;
+  --screen: #0f2a3a;
+  --screen-ink: #bfe6ff;
+  --display: "Archivo Black", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161414; --surface: #211e1e; --ink: #f3efee; --muted: #b3aba8; --line: #3a3534;
+    --red: #ff3b45; --red-soft: #3a1416; --black: #000000; --wall: #2b2727; --shelf: #6e6866; --field: #2a2626;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161414; --surface: #211e1e; --ink: #f3efee; --muted: #b3aba8; --line: #3a3534;
+  --red: #ff3b45; --red-soft: #3a1416; --black: #000000; --wall: #2b2727; --shelf: #6e6866; --field: #2a2626;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; margin: 0; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 0 40px; }
+header.brand { background: var(--black); color: #fff; }
+header.brand .wrap { padding-block: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
+.logo { background: #e30613; color: #fff; font-family: var(--display); font-size: 20px; padding: 6px 12px; letter-spacing: .02em; }
+header.brand h1 { font-family: var(--display); font-weight: 400; font-size: clamp(20px, 3.2vw, 30px); margin: 0; text-wrap: balance; }
+header.brand h1 span { color: #ff3b45; }
+header.brand p { margin: 0; flex-basis: 100%; color: #d6d0ce; font-size: 14px; }
+
+.card { background: var(--surface); border: 1px solid var(--line); padding: 16px 18px; min-width: 0; }
+.card h2 { font-family: var(--display); font-weight: 400; font-size: 17px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .03em; }
+.card h2 .tag { color: var(--red); }
+.top { margin-top: 20px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+.top p { margin: 0 0 6px; }
+.top .muted { color: var(--muted); font-size: 14px; }
+label.lb { display: block; font-weight: 600; margin-bottom: 6px; }
+input[type=text], textarea { width: 100%; font: inherit; padding: 9px 10px; border: 2px solid var(--line); background: var(--field); color: var(--ink); }
+textarea { min-height: 84px; resize: vertical; }
+input:focus-visible, textarea:focus-visible { outline: 3px solid var(--red); outline-offset: 1px; }
+
+.mission { margin-top: 22px; }
+.mhead { display: flex; align-items: center; gap: 12px; background: var(--black); color: #fff; padding: 10px 16px; }
+.mhead .num { background: #e30613; font-family: var(--display); padding: 2px 10px; font-size: 18px; }
+.mhead h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 20px; }
+.step { margin-top: 14px; }
+.step h3 { margin: 0 0 8px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+.step h3 .b { display: inline-grid; place-items: center; width: 26px; height: 26px; background: var(--red); color: #fff; font-size: 14px; }
+.hint { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
+
+/* puzzle */
+.puzzle { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.pile, .order { display: grid; gap: 8px; align-content: start; min-height: 60px; }
+.zone-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
+.tile { appearance: none; font: inherit; text-align: left; background: var(--kraft); color: #1b1a1a; border: 2px solid var(--kraft-d); padding: 9px 12px; cursor: pointer; font-weight: 600; box-shadow: 0 2px 0 var(--kraft-d); }
+.tile:hover { filter: brightness(1.06); }
+.tile:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+.slot { display: grid; grid-template-columns: 34px 1fr; gap: 8px; align-items: stretch; }
+.slot .n { display: grid; place-items: center; background: var(--black); color: #fff; font-weight: 700; }
+.slot .empty { border: 2px dashed var(--line); min-height: 42px; }
+.slot .tile { background: #fff; border-color: var(--black); box-shadow: none; }
+
+/* scène */
+.scene { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; align-items: start; }
+.counter { background: var(--wall); border: 3px solid var(--shelf); padding: 12px; }
+.casiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.casier { background: #5f5a58; color: #fff; text-align: center; padding: 6px 4px 8px; font-size: 12px; font-weight: 700; min-height: 70px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
+.casier .colis { background: var(--kraft); border: 2px solid var(--kraft-d); color: #1b1a1a; font-size: 10px; padding: 3px 4px; width: 92%; }
+.casier.hl { outline: 3px solid #e30613; outline-offset: 2px; }
+.casier .vide { color: #ffb3b8; font-size: 11px; }
+.people { margin-top: 12px; display: grid; gap: 10px; }
+.bubble { background: var(--surface); border: 2px solid var(--black); padding: 10px 12px; position: relative; }
+.bubble b { color: var(--red); }
+.phone { background: var(--black); color: #fff; border-radius: 16px; padding: 12px; max-width: 280px; }
+.phone .sms { background: #2c2c2e; border-radius: 12px; padding: 8px 10px; font-size: 13px; }
+.phone small { color: #aaa; display: block; margin-bottom: 4px; }
+.docs { display: flex; gap: 8px; flex-wrap: wrap; }
+.doc { border: 2px solid var(--line); padding: 6px 10px; background: var(--surface); font-size: 13px; font-weight: 600; }
+.doc.yes { border-color: #1d7a3a; }
+.doc.no { border-color: #e30613; color: var(--red); }
+.screen { background: var(--screen); color: var(--screen-ink); font-family: "Courier New", monospace; padding: 12px; font-size: 13px; border: 6px solid #333; }
+.screen .z { color: #ff8a8f; font-weight: 700; }
+.screen .g { color: #8ff0a8; font-weight: 700; }
+
+.decide { display: flex; gap: 8px; flex-wrap: wrap; }
+.opt { appearance: none; font: inherit; font-weight: 700; background: var(--surface); color: var(--ink); border: 2px solid var(--line); padding: 10px 14px; cursor: pointer; text-align: left; }
+.opt:hover { border-color: var(--red); }
+.opt[aria-pressed="true"] { border-color: var(--red); background: var(--red-soft); }
+.opt:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cards .opt { min-height: 74px; font-weight: 600; }
+.cards .opt .k { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+.q { margin-top: 12px; }
+.q label { display: block; font-weight: 700; margin-bottom: 6px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { appearance: none; font: inherit; font-weight: 700; padding: 10px 16px; border: 2px solid var(--black); cursor: pointer; }
+.btn.primary { background: #e30613; border-color: #e30613; color: #fff; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.msgline { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+.msgline.warn { color: var(--red); font-weight: 700; }
+.linkbox { margin-top: 12px; border: 2px solid var(--red); background: var(--red-soft); padding: 12px 14px; }
+.linkbox p { margin: 0 0 8px; font-size: 14px; }
+.linkbox .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.linkbox input { flex: 1 1 200px; min-width: 0; font-size: 13px; }
+.linkbox .small { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+.sig { margin-top: 14px; font-size: 13px; color: var(--muted); }
+
+@media (max-width: 900px) { .top, .scene, .puzzle { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .cards { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+
+<header class="brand">
+  <div class="wrap">
+    <div class="logo">DARTY</div>
+    <h1>Le comptoir <span>Click &amp; Collect</span></h1>
+    <p>Magasin Darty de Pont-à-Mousson · Pôle vente et omnicanal · Mission 5 · Samedi 28 novembre 2026</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="top">
+    <div class="card">
+      <h2><span class="tag">Votre poste</span> · le comptoir Click &amp; Collect</h2>
+      <p>Ce matin, vous tenez le comptoir Click &amp; Collect : vous remettez aux clients les commandes qu'ils ont passées sur darty.com. Observez bien chaque situation avant de décider.</p>
+      <p class="muted">Vos réponses s'enregistrent sur cette page. À la fin, enregistrez votre travail et collez le lien dans votre document Word.</p>
+    </div>
+    <div class="card">
+      <label class="lb" for="nom">Prénom et nom de l'élève</label>
+      <input id="nom" type="text" autocomplete="off" placeholder="Ex. : Léa MARTIN">
+      <p class="sig">Votre travail est aussi enregistré automatiquement sur cet ordinateur.</p>
+    </div>
+  </section>
+
+  <!-- ======================= MISSION 5 ======================= -->
+  <section class="mission">
+    <div class="mhead"><span class="num">5</span><h2>Remettre une commande Click &amp; Collect</h2></div>
+    <div class="card">
+      <div class="step">
+        <h3><span class="b">A</span>Remettez la procédure de retrait dans l'ordre</h3>
+        <p class="hint">Les étapes du retrait d'une commande sont mélangées. Cliquez sur les étapes dans l'ordre où vous les réalisez. Pour retirer une étape, cliquez dessus dans « Ma procédure ».</p>
+        <div class="puzzle">
+          <div><div class="zone-title">Étapes mélangées</div><div class="pile" id="pile"></div></div>
+          <div><div class="zone-title">Ma procédure</div><div class="order" id="order"></div></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <h3><span class="b">B</span>Le client suivant</h3>
+        <div class="scene">
+          <div class="counter">
+            <div class="casiers" aria-label="Casiers Click & Collect">
+              <div class="casier">A1<span class="colis">CC-26-4412<br>MARTIN P.</span></div>
+              <div class="casier">A2<span class="colis">CC-26-4433<br>DUPONT J.</span></div>
+              <div class="casier">A3<span class="colis">CC-26-4471<br>PETIT S.</span></div>
+              <div class="casier">B1<span class="colis">CC-26-4486<br>KLEIN H.</span></div>
+              <div class="casier">B2<span class="vide">vide</span></div>
+              <div class="casier">B3<span class="colis">CC-26-4497<br>ROUX A.</span></div>
+            </div>
+            <div class="people">
+              <div class="bubble">« Bonjour ! Je viens chercher la commande de mon frère, <b>Paul MARTIN</b>. Il travaille aujourd'hui. Voici le code qu'il a reçu par SMS. »</div>
+              <div class="phone"><small>SMS transféré par Paul</small><div class="sms">DARTY : votre commande CC-26-4412 est prête. Code de retrait : <b>4120</b>. Présentez-vous avec votre pièce d'identité.</div></div>
+              <div class="docs">
+                <span class="doc yes">✔ Carte d'identité de la cliente (Julie MARTIN)</span>
+                <span class="doc no">✘ Procuration de Paul MARTIN</span>
+                <span class="doc no">✘ Copie de la pièce d'identité de Paul MARTIN</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="q"><label>Remettez-vous la commande à la cliente ?</label>
+              <div class="decide" id="d5">
+                <button type="button" class="opt" data-v="oui" aria-pressed="false">Je remets le colis</button>
+                <button type="button" class="opt" data-v="non" aria-pressed="false">Je ne remets pas le colis</button>
+              </div>
+            </div>
+            <div class="q"><label for="pq5">Pourquoi ?</label><textarea id="pq5" placeholder="J'ai pris cette décision car…"></textarea></div>
+            <div class="q"><label for="dit5">Ce que je dis à la cliente</label><textarea id="dit5" placeholder="Je suis désolé(e), Madame…"></textarea></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:22px">
+    <div class="actions">
+      <button class="btn primary" id="save">Enregistrer mon travail</button>
+      <button class="btn ghost" id="reset">Tout effacer</button>
+    </div>
+    <div class="linkbox" id="linkbox" hidden>
+      <p><b>Votre lien de sauvegarde est prêt.</b> Copiez-le et collez-le dans votre document Word : il permet de retrouver votre travail sur n'importe quel ordinateur.</p>
+      <div class="row"><input id="link" type="text" readonly aria-label="Lien de sauvegarde"><button class="btn primary" id="copy" type="button">Copier le lien</button></div>
+      <p class="small">Si vous modifiez votre travail, cliquez de nouveau sur « Enregistrer mon travail » et remplacez l'ancien lien.</p>
+    </div>
+    <p class="msgline" id="msg" aria-live="polite">Pensez à enregistrer votre travail et à coller le lien dans votre document Word.</p>
+  </section>
+</main>
+
+<script>
+(function () {
+  var APP = "darty-comptoir-cc", KEY = "darty-comptoir-cc";
+  // Étapes affichées dans un ordre mélangé fixe (aucun ordre « correct » n'est stocké dans la page)
+  var TILES = [
+    { id: "p", t: "Vérifier le paiement" },
+    { id: "a", t: "Accueillir le client et lui demander son nom et son code" },
+    { id: "s", t: "Faire signer le registre de remise" },
+    { id: "r", t: "Retrouver la commande dans le casier" },
+    { id: "c", t: "Contrôler le produit et l'état du colis avec le client" },
+    { id: "g", t: "Proposer un service et prendre congé" },
+    { id: "i", t: "Vérifier la pièce d'identité" }
+  ];
+  var byId = {}; TILES.forEach(function (t) { byId[t.id] = t; });
+  var order = [], d5 = "";
+  var pile = document.getElementById("pile"), ord = document.getElementById("order");
+  var nom = document.getElementById("nom"), msg = document.getElementById("msg");
+  var TXT = ["pq5", "dit5"];
+
+  function tile(t, inOrder) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "tile"; b.textContent = t.t;
+    b.addEventListener("click", function () {
+      if (inOrder) order = order.filter(function (x) { return x !== t.id; });
+      else if (order.length < TILES.length) order.push(t.id);
+      drawPuzzle(); autosave();
+    });
+    return b;
+  }
+  function drawPuzzle() {
+    pile.innerHTML = ""; ord.innerHTML = "";
+    TILES.forEach(function (t) { if (order.indexOf(t.id) < 0) pile.appendChild(tile(t, false)); });
+    if (!pile.children.length) { var d = document.createElement("p"); d.className = "hint"; d.textContent = "Toutes les étapes sont placées."; pile.appendChild(d); }
+    for (var i = 0; i < TILES.length; i++) {
+      var s = document.createElement("div"); s.className = "slot";
+      s.innerHTML = '<span class="n">' + (i + 1) + '</span>';
+      if (order[i]) s.appendChild(tile(byId[order[i]], true));
+      else { var e = document.createElement("span"); e.className = "empty"; s.appendChild(e); }
+      ord.appendChild(s);
+    }
+  }
+  function group(id, get, set) {
+    var g = document.getElementById(id);
+    g.querySelectorAll(".opt").forEach(function (b) {
+      b.addEventListener("click", function () { set(b.dataset.v); paint(); autosave(); });
+    });
+    function paint() { g.querySelectorAll(".opt").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.v === get() ? "true" : "false"); }); }
+    return paint;
+  }
+  var paint5 = group("d5", function () { return d5; }, function (v) { d5 = v; });
+  TXT.forEach(function (id) { document.getElementById(id).addEventListener("input", autosave); });
+  nom.addEventListener("input", autosave);
+
+  // ---------- sauvegarde
+  function state() {
+    var o = { app: APP, nom: nom.value, o: order.join(""), d5: d5 };
+    TXT.forEach(function (id) { o[id] = document.getElementById(id).value; });
+    return o;
+  }
+  function apply(st) {
+    nom.value = st.nom || "";
+    order = (st.o || "").split("").filter(function (x) { return byId[x]; });
+    d5 = st.d5 || "";
+    TXT.forEach(function (id) { document.getElementById(id).value = st[id] || ""; });
+    drawPuzzle(); paint5();
+  }
+  function enc(o) { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  function dec(t) { t = t.replace(/-/g, "+").replace(/_/g, "/"); while (t.length % 4) t += "="; return JSON.parse(decodeURIComponent(escape(atob(t)))); }
+  function syncUrl() { try { history.replaceState(null, "", "#t=" + enc(state())); } catch (e) {} }
+  function autosave() { syncUrl(); try { localStorage.setItem(KEY, JSON.stringify(state())); } catch (e) {} }
+  function say(t, warn) { msg.textContent = t; msg.classList.toggle("warn", !!warn); }
+
+  var linkbox = document.getElementById("linkbox"), linkIn = document.getElementById("link");
+  document.getElementById("save").addEventListener("click", function () {
+    autosave();
+    linkIn.value = location.href.split("#")[0] + "#t=" + enc(state());
+    linkbox.hidden = false; linkIn.focus(); linkIn.select();
+    say("Travail enregistré. Copiez le lien et collez-le dans votre document Word.");
+  });
+  document.getElementById("copy").addEventListener("click", function () {
+    var done = function () { say("Lien copié ! Collez-le dans votre document Word (Ctrl + V)."); };
+    try { navigator.clipboard.writeText(linkIn.value).then(done, function () { linkIn.select(); document.execCommand("copy"); done(); }); }
+    catch (e) { linkIn.select(); try { document.execCommand("copy"); done(); } catch (e2) { say("Sélectionnez le lien puis faites Ctrl + C pour le copier.", true); } }
+  });
+  var armed = false, resetBtn = document.getElementById("reset");
+  resetBtn.addEventListener("click", function () {
+    if (!armed) { armed = true; resetBtn.textContent = "Confirmer : tout effacer ?"; return; }
+    armed = false; resetBtn.textContent = "Tout effacer";
+    apply({ nom: nom.value }); autosave(); linkbox.hidden = true; say("Le travail a été effacé.");
+  });
+
+  var loaded = false;
+  if (location.hash.indexOf("#t=") === 0) {
+    try { var st0 = dec(location.hash.slice(3)); if (st0.app === APP) { apply(st0); loaded = true; say("Travail retrouvé grâce à votre lien de sauvegarde."); } }
+    catch (e) { say("Ce lien de sauvegarde est incomplet. Vérifiez que vous avez bien copié tout le lien.", true); }
+  }
+  if (!loaded) { try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv && sv.app === APP) { apply(sv); loaded = true; say("Votre travail précédent a été retrouvé sur cet ordinateur."); } } catch (e) {} }
+  if (!loaded) drawPuzzle();
+})();
+</script>
+
+</body>
+</html>
